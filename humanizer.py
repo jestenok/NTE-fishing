@@ -32,7 +32,7 @@ class DecisionContext:
     """
     __slots__ = (
         "now",
-        "slider_x", "zone_center", "deadband_px",
+        "slider_x", "zone_center", "deadband_px", "engage_threshold_px",
         "velocity", "predicted_x", "predicted_err",
         "desired", "actual", "duration",
         "committed_miss",
@@ -44,6 +44,7 @@ class DecisionContext:
         self.slider_x: float | None = None
         self.zone_center: float | None = None
         self.deadband_px: int = 0
+        self.engage_threshold_px: int = 0
         self.velocity = 0.0
         self.predicted_x = 0.0
         self.predicted_err = 0.0
@@ -54,11 +55,12 @@ class DecisionContext:
         self.done = False
         self.result = RELEASE
 
-    def reset(self, slider_x, zone_center, deadband_px):
+    def reset(self, slider_x, zone_center, deadband_px, engage_threshold_px):
         self.now = time.perf_counter()
         self.slider_x = slider_x
         self.zone_center = zone_center
         self.deadband_px = deadband_px
+        self.engage_threshold_px = engage_threshold_px
         self.velocity = 0.0
         self.predicted_x = slider_x if slider_x is not None else 0.0
         self.predicted_err = 0.0
@@ -174,6 +176,8 @@ class LockGuardStage:
         if ctx.slider_x is None or ctx.zone_center is None:
             return True
         err = ctx.slider_x - ctx.zone_center
+        if abs(err) <= ctx.deadband_px:
+            return True  # догнали до центра — отпустить, не дожидая конца press_duration
         thr = self.cfg.emergency_break_px
         if state.current == LEFT and err < -thr:
             return True
@@ -203,7 +207,13 @@ class PredictionStage:
 
 
 class ClassifyStage:
-    """Из predicted_err → желаемое направление с учётом deadband."""
+    """predicted_err → desired с гистерезисом.
+
+    Если бот сейчас стоит (`state.current == RELEASE`), снова чесаться он
+    начинает только когда |err| превысил «внешний» порог `engage_threshold_px`.
+    Если уже давит — отпускает при возврате в deadband. Это исключает
+    мелкое дрожание, когда ползунок болтается вокруг центра.
+    """
 
     def __init__(self, cfg: HumanizerConfig):
         self.cfg = cfg
@@ -213,9 +223,10 @@ class ClassifyStage:
             ctx.desired = RELEASE
             return
         e = ctx.predicted_err
-        if e > ctx.deadband_px:
+        threshold = ctx.engage_threshold_px if state.current == RELEASE else ctx.deadband_px
+        if e > threshold:
             ctx.desired = LEFT
-        elif e < -ctx.deadband_px:
+        elif e < -threshold:
             ctx.desired = RIGHT
         else:
             ctx.desired = RELEASE
@@ -363,12 +374,13 @@ class Humanizer:
         self.state.reset()
 
     def step(self, slider_x: float | None, zone_center: float | None,
-             deadband_px: int) -> str:
+             deadband_px: int, engage_threshold_px: int | None = None) -> str:
+        engage = engage_threshold_px if engage_threshold_px is not None else deadband_px
         if not self.cfg.enabled:
-            return self._raw(slider_x, zone_center, deadband_px)
+            return self._raw(slider_x, zone_center, deadband_px, engage)
 
         ctx = self._ctx
-        ctx.reset(slider_x, zone_center, deadband_px)
+        ctx.reset(slider_x, zone_center, deadband_px, engage)
         for stage in self.stages:
             stage.apply(ctx, self.state)
             if ctx.done:
@@ -376,7 +388,7 @@ class Humanizer:
         return ctx.result
 
     @staticmethod
-    def _raw(slider_x, zone_center, deadband_px):
+    def _raw(slider_x, zone_center, deadband_px, _engage_threshold_px):
         if slider_x is None or zone_center is None:
             return RELEASE
         err = slider_x - zone_center

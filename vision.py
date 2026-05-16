@@ -34,7 +34,7 @@ class ScreenCapture:
     """Захват прямоугольной области экрана через mss."""
 
     def __init__(self) -> None:
-        self._sct = mss.mss()
+        self._sct = mss.MSS()
         monitor = self._sct.monitors[1]
         self.screen_w: int = monitor["width"]
         self.screen_h: int = monitor["height"]
@@ -80,6 +80,8 @@ class BarDetector:
             self._slider_mask, zone_run, CONFIG.slider_search_margin_px,
             CONFIG.min_slider_area_px,
         )
+        if slider_x is None:
+            slider_x = _centroid_x(self._slider_mask, CONFIG.min_slider_area_px)
         return Detection(zone_run[0], zone_run[1], slider_x)
 
 
