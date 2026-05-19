@@ -5,7 +5,7 @@
 """
 from core.io_utils import ensure_utf8_stdout
 from core.runner import GameBot
-from profiles.cigame import PROFILE
+from profiles.reaction_test import PROFILE
 
 ensure_utf8_stdout()
 
