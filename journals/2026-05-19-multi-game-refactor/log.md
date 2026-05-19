@@ -47,5 +47,12 @@
 - Урок: «новая игра» != «новая механика». reaction по поведению — сторож,
   отдельная механика оправдана только при иной логике (как slider).
 
+## Дополнение: тайминг-стратегии (2026-05-19)
+- core/timing.py: Delay (NoDelay/RandomDelay) + Cooldown (UntilGone/
+  TimerCooldown), фабрики make_delay/make_cooldown. Стратегия выбирается
+  один раз на этапе билда — в tick() нет ветвлений по delay/cooldown.
+- RegionWatcher переведён на _delay и _cooldown; убраны _instant,
+  _cooldown_until и ветка `if cooldown_s is None` из горячего цикла.
+
 ## Обнаруженные навыки
 - нет
