@@ -50,12 +50,8 @@ class GameBot:
         print("[bot] quit")
 
     def _render_debug(self) -> None:
-        panels = []
-        for m in self.modules:
-            panel = m.debug_panel()
-            if panel is not None:
-                panels.append((m.name, panel[0], panel[1]))
-        self._debug_view.render(panels)
+        blocks = [(m.name, *m.debug_block()) for m in self.modules]
+        self._debug_view.render(blocks)
 
     def run(self) -> None:
         keyboard.add_hotkey(self.profile.hotkey_toggle, self.toggle)

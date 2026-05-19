@@ -55,11 +55,12 @@
   _cooldown_until и ветка `if cooldown_s is None` из горячего цикла.
 
 ## Дополнение: окно отладки (2026-05-19)
-- core/debug_view.py: DebugView — отдельное окно OpenCV с панелями по
-  модулям, зелёная/красная рамка = задетектил/нет. НЕ оверлей поверх игры
-  (выбрано пользователем из соображений античита).
-- Module получил debug_panel() -> (кадр, detected) | None. SliderMechanic
-  и RegionWatcher стэшат последний кадр/детекцию.
+- core/debug_view.py: DebugView — отдельное окно OpenCV (НЕ оверлей,
+  выбрано пользователем из соображений античита). Снимает весь экран и
+  рисует на нём рамки отслеживаемых регионов: зелёная = задетектил,
+  красная = нет. Обновление 15 fps, большой экран ужимается до 1280px.
+- Module.debug_block() -> (bbox экрана, detected). SliderMechanic и
+  RegionWatcher отдают свой _cap.bbox + флаг детекции.
 - GameProfile.debug_view: bool = False — флаг полного отключения; при False
   DebugView не создаётся вообще.
 

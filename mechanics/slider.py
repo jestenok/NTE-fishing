@@ -175,7 +175,6 @@ class SliderMechanic:
         self._keys = self._build_keys(cfg)
         self._log_interval = 0.1 if cfg.debug else 0.5
         self._last_log = 0.0
-        self._last_frame: np.ndarray | None = None
         self._last_det: Detection | None = None
 
     @staticmethod
@@ -187,7 +186,6 @@ class SliderMechanic:
     def tick(self, now: float) -> str | None:
         frame = self._cap.grab()
         det = self._detector.detect(frame)
-        self._last_frame = frame
         self._last_det = det
         slider_x = float(det.slider_x) if det.has_slider else None
         zone_center = float(det.zone_center) if det.has_zone else None
@@ -219,12 +217,10 @@ class SliderMechanic:
         return (f"[{self._keys.state}] slider={sx_s} zone_c={zc_s} "
                 f"err={err_s} action={action}")
 
-    def debug_panel(self) -> tuple[np.ndarray, bool] | None:
-        if self._last_frame is None or self._last_det is None:
-            return None
-        img = annotate(self._last_frame, self._last_det)
-        detected = self._last_det.has_zone and self._last_det.has_slider
-        return img, detected
+    def debug_block(self) -> tuple[dict, bool]:
+        det = self._last_det
+        detected = det is not None and det.has_zone and det.has_slider
+        return self._cap.bbox, detected
 
     def on_stop(self) -> None:
         self._keys.release_all()
