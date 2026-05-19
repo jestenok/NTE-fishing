@@ -32,4 +32,5 @@ PROFILE = GameProfile(
     hotkey_toggle="f3",
     hotkey_quit="f4",
     modules=[_reaction],
+    debug_view=True,
 )
