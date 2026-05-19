@@ -3,6 +3,8 @@ __pycache__/
 .idea/
 .claude/
 images/
+memory/
+journals/
 
 # C++ build
 cpp/build/
