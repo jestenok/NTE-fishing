@@ -1,7 +1,4 @@
-"""Профиль игры reaction-test — тест на реакцию.
-
-Регион в случайный момент становится зелёным — бот сразу кликает мышью.
-Запуск: python bot.py reaction-test
+"""Профиль игры cigame.
 
 Реализован обычным сторожем (WatcherConfig) с действием-кликом: «регион
 позеленел → клик» — это тот же автомат, что и у UI-сторожей рыбалки.
@@ -13,13 +10,13 @@ from core.actions import MouseClick, KeyPress
 from core.geometry import Region
 from core.hsv import HSVRange
 from core.watcher import WatcherConfig
-from profiles.base import GameProfile
+from profiles.base import DebugView, GameProfile
 
 _reaction = WatcherConfig(
     name="reaction",
-    region=Region(x1=0.145, y1=0.681, x2=0.805, y2=0.682),
-    hsv=[HSVRange(0, 0, 200, 180, 40, 255)],  # белый: любой H, низкая S, высокая V
-    action=KeyPress("space"),
+    region=Region(x1=0.450, y1=0.675, x2=0.500, y2=0.685),
+    hsv=[HSVRange(0, 0, 60, 90, 255, 255)],  # белый: любой H, низкая S, высокая V
+    action=KeyPress("space", (0.05, 0.1)),  # клик по центру региона
     min_fill=0.5,             # ≥50% площади региона белое → срабатываем
     delay_s=(0.0, 0.0),     # задержка реакции; (0.0, 0.0) = кликать мгновенно
     cooldown_s=None,          # после клика ждём, пока белое не пропадёт
@@ -28,9 +25,9 @@ _reaction = WatcherConfig(
 
 PROFILE = GameProfile(
     name="cigame",
-    fps=60,
+    fps=180,
     hotkey_toggle="f3",
     hotkey_quit="f4",
     modules=[_reaction],
-    debug_view=True,
+    debug_view=DebugView.OFF,
 )

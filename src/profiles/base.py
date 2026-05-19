@@ -1,8 +1,20 @@
 import importlib
 from dataclasses import dataclass
+from enum import Enum
 from typing import Protocol
 
 from core.module import Module
+
+
+class DebugView(Enum):
+    """Режим окна отладки.
+
+    OFF — выкл; WINDOW — отдельное окно OpenCV со скриншотом;
+    OVERLAY — прозрачный оверлей поверх игры (layered-окно, без инъекции).
+    """
+    OFF = "off"
+    WINDOW = "window"
+    OVERLAY = "overlay"
 
 
 class ModuleConfig(Protocol):
@@ -24,9 +36,7 @@ class GameProfile:
     fps: int = 60
     hotkey_toggle: str = "f8"
     hotkey_quit: str = "f9"
-    # окно отладки: False — выкл, True/"window" — отдельное окно OpenCV,
-    # "overlay" — прозрачный оверлей поверх игры (layered-окно, без инъекции)
-    debug_view: bool | str = False
+    debug_view: DebugView = DebugView.OFF
 
     def build_modules(self) -> list[Module]:
         return [m.build() for m in self.modules]

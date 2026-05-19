@@ -94,10 +94,11 @@ class RegionWatcher:
             return None
 
         if self.state == self.IDLE:
-            if visible:
-                self._act_at = now + self._delay.next()
-                self.state = self.SCHEDULED
-            return None
+            if not visible:
+                return None
+            self._act_at = now + self._delay.next()
+            self.state = self.SCHEDULED
+            # не выходим: если delay == 0, сработаем в этом же тике (экономим кадр)
 
         # SCHEDULED
         if not visible:

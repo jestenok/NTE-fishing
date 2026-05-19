@@ -2,27 +2,19 @@ import time
 
 import keyboard
 
-from profiles.base import GameProfile
+from profiles.base import DebugView, GameProfile
 
 
-def _make_debug_view(mode: bool | str):
-    """Создаёт окно отладки по режиму из профиля (None — отладка выключена).
-
-    False/None — выкл; True или "window" — отдельное окно OpenCV;
-    "overlay" — прозрачный оверлей поверх игры.
-    """
-    if not mode:
+def _make_debug_view(mode: DebugView):
+    if mode is DebugView.OFF:
         return None
-    if mode is True or mode == "window":
-        from core.debug_view import DebugView
-        return DebugView()
-    if mode == "overlay":
+    if mode is DebugView.WINDOW:
+        from core.debug_view import DebugView as DebugWindow
+        return DebugWindow()
+    if mode is DebugView.OVERLAY:
         from core.overlay_view import OverlayView
         return OverlayView()
-    raise SystemExit(
-        f"неизвестный режим debug_view: {mode!r} "
-        f"(ожидается False, 'window' или 'overlay')"
-    )
+    raise SystemExit(f"неизвестный режим debug_view: {mode!r}")
 
 
 class FrameRateLimiter:
@@ -70,7 +62,7 @@ class GameBot:
 
     def _render_debug(self) -> None:
         blocks = [(m.name, *m.debug_block()) for m in self.modules]
-        self._debug_view.render(blocks)
+        self._debug_view.render(blocks, self.running)
 
     def run(self) -> None:
         keyboard.add_hotkey(self.profile.hotkey_toggle, self.toggle)
@@ -80,7 +72,7 @@ class GameBot:
         print(f"[bot] {self.profile.hotkey_toggle.upper()} = старт/пауза, "
               f"{self.profile.hotkey_quit.upper()} = выход.")
         if self._debug_view is not None:
-            print("[bot] окно отладки ВКЛ (отдельное окно, не оверлей поверх игры)")
+            print(f"[bot] окно отладки ВКЛ ({self.profile.debug_view.value})")
         try:
             while not self.quit:
                 t0 = time.perf_counter()
@@ -89,9 +81,9 @@ class GameBot:
                         msg = m.tick(t0)
                         if msg:
                             print(f"[{m.name}] {msg}")
-                    if self._debug_view is not None:
-                        self._render_debug()
-                else:
+                if self._debug_view is not None:
+                    self._render_debug()
+                if not self.running:
                     time.sleep(0.05)
                 self.rate.sleep_to_frame(t0)
         finally:
