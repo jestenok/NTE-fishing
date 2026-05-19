@@ -33,7 +33,7 @@ class DebugView:
         self._last = 0.0
         self._open = False
 
-    def render(self, blocks: list[tuple[str, dict, bool]]) -> None:
+    def render(self, blocks: list[tuple[str, dict, bool]], running: bool) -> None:
         """blocks: список (имя модуля, bbox-словарь mss, флаг детекции)."""
         now = time.perf_counter()
         if now - self._last < self._interval:
@@ -42,6 +42,7 @@ class DebugView:
         if self._open and not self._alive():
             self._open = False  # окно закрыли крестиком — пересоздать заново
         frame = self._screen.grab()
+        self._draw_status(frame, running)
         for name, bbox, ok in blocks:
             self._draw_block(frame, name, bbox, ok)
         if not self._open:
@@ -51,6 +52,13 @@ class DebugView:
         cv2.imshow(self._win, self._fit(frame))
         cv2.waitKey(1)
         self._open = True
+
+    @staticmethod
+    def _draw_status(frame: np.ndarray, running: bool) -> None:
+        text = "BOT: ON" if running else "BOT: OFF"
+        color = _OK_COLOR if running else _MISS_COLOR
+        cv2.putText(frame, text, (12, 36),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2)
 
     @staticmethod
     def _draw_block(frame: np.ndarray, name: str, bbox: dict, ok: bool) -> None:

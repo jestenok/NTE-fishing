@@ -53,7 +53,7 @@ class OverlayView:
         self._root: tk.Tk | None = None
         self._canvas: tk.Canvas | None = None
 
-    def render(self, blocks: list[tuple[str, dict, bool]]) -> None:
+    def render(self, blocks: list[tuple[str, dict, bool]], running: bool) -> None:
         """blocks: список (имя модуля, bbox-словарь mss, флаг детекции)."""
         now = time.perf_counter()
         if now - self._last < self._interval:
@@ -62,12 +62,19 @@ class OverlayView:
         if self._root is None:
             self._build()
         self._canvas.delete("all")
+        self._draw_status(running)
         for name, bbox, ok in blocks:
             self._draw_block(name, bbox, ok)
         try:
             self._root.update()
         except tk.TclError:
             self._root = self._canvas = None  # окно уничтожено — пересоздадим
+
+    def _draw_status(self, running: bool) -> None:
+        text = "BOT: ON" if running else "BOT: OFF"
+        color = _OK_COLOR if running else _MISS_COLOR
+        self._canvas.create_text(12, 12, text=text, fill=color,
+                                 anchor="nw", font=("Segoe UI", 14, "bold"))
 
     def _draw_block(self, name: str, bbox: dict, ok: bool) -> None:
         color = _OK_COLOR if ok else _MISS_COLOR
