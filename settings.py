@@ -1,3 +1,3 @@
 # Активный профиль по умолчанию — имя файла в profiles/ без расширения .py.
 # Переопределяется аргументом командной строки: python bot.py <профиль>
-ACTIVE_PROFILE = "default"
+ACTIVE_PROFILE = "nte-fishing"

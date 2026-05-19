@@ -34,5 +34,18 @@
 - Багфикс попутно: убран дубль main() в calibrate.py (раньше парсинг
   аргументов не работал).
 
+## Дополнение: игра reaction-test (2026-05-19)
+- Сначала сделал отдельной механикой (mechanics/reaction.py) — оказалось
+  дублированием автомата RegionWatcher. Переделал.
+- Действие сторожа вынесено в core/actions.py: Action (Protocol),
+  KeyPress (клавиша), MouseClick (мышь).
+- WatcherConfig: key → action; добавлен min_fill (порог как доля площади
+  региона, альтернатива min_pixels); __post_init__ проверяет, что задан
+  ровно один из двух.
+- mechanics/reaction.py удалён. reaction-test — теперь WatcherConfig с
+  action=MouseClick, min_fill=0.5, delay_s=(0.12,0.22), cooldown_s=None.
+- Урок: «новая игра» != «новая механика». reaction по поведению — сторож,
+  отдельная механика оправдана только при иной логике (как slider).
+
 ## Обнаруженные навыки
 - нет
