@@ -47,6 +47,41 @@ python bot.py
 3. В новом профиле собери `PROFILE = GameProfile(name=..., modules=[...], ...)`.
 4. Поменяй импорт в `src/bot.py` на свой профиль.
 
+## Сборка .exe (Nuitka)
+
+Один файл `build/vision-bot.exe` через Nuitka + MSVC. Первая сборка ~10 мин, повторные с тёплым кэшем — 1–2 мин (ccache переиспользует объектники C).
+
+Один раз: установить Nuitka и ccache (Nuitka сам подхватит его из PATH).
+
+```powershell
+pip install nuitka
+winget install ccache.ccache
+ccache -M 10G   # увеличить лимит кэша до 10 ГБ (по умолчанию 5)
+```
+
+Сборка:
+
+```powershell
+cd src
+python -m nuitka --onefile --lto=no --remove-output --assume-yes-for-downloads `
+  --include-package=core --include-package=mechanics --include-package=profiles `
+  --output-filename=vision-bot.exe --output-dir=..\build bot.py
+```
+
+Флаги-ускорялки:
+- `--lto=no` — отключает Link-Time Optimization. LTO выполняется на этапе линковки и не кэшируется ccache, без него повторный билд короче в разы (цена — exe ~5–10 % больше).
+- `--remove-output` — после успеха удаляет промежуточные `bot.build/`, `bot.onefile-build/`, оставляя только `vision-bot.exe`.
+- `--assume-yes-for-downloads` — Nuitka не спрашивает разрешения качать зависимые тулзы.
+- `--jobs` указывать не нужно — Nuitka по умолчанию параллелит на все ядра.
+
+Проверить, что ccache реально работает:
+
+```powershell
+ccache --show-stats
+```
+
+После второго билда у `Hits` должно быть большинство, у `Misses` — единицы.
+
 ## Структура проекта
 
 ```
