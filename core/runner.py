@@ -2,6 +2,7 @@ import time
 
 import keyboard
 
+from core.debug_view import DebugView
 from profiles.base import GameProfile
 
 
@@ -28,6 +29,7 @@ class GameBot:
         self.profile = profile
         self.modules = profile.build_modules()
         self.rate = FrameRateLimiter(profile.fps)
+        self._debug_view = DebugView() if profile.debug_view else None
         self.running = False
         self.quit = False
 
@@ -47,6 +49,14 @@ class GameBot:
         self.quit = True
         print("[bot] quit")
 
+    def _render_debug(self) -> None:
+        panels = []
+        for m in self.modules:
+            panel = m.debug_panel()
+            if panel is not None:
+                panels.append((m.name, panel[0], panel[1]))
+        self._debug_view.render(panels)
+
     def run(self) -> None:
         keyboard.add_hotkey(self.profile.hotkey_toggle, self.toggle)
         keyboard.add_hotkey(self.profile.hotkey_quit, self.stop)
@@ -54,6 +64,8 @@ class GameBot:
         print(f"[bot] профиль '{self.profile.name}' загружен. модули: {names}")
         print(f"[bot] {self.profile.hotkey_toggle.upper()} = старт/пауза, "
               f"{self.profile.hotkey_quit.upper()} = выход.")
+        if self._debug_view is not None:
+            print("[bot] окно отладки ВКЛ (отдельное окно, не оверлей поверх игры)")
         try:
             while not self.quit:
                 t0 = time.perf_counter()
@@ -62,9 +74,13 @@ class GameBot:
                         msg = m.tick(t0)
                         if msg:
                             print(f"[{m.name}] {msg}")
+                    if self._debug_view is not None:
+                        self._render_debug()
                 else:
                     time.sleep(0.05)
                 self.rate.sleep_to_frame(t0)
         finally:
             for m in self.modules:
                 m.on_stop()
+            if self._debug_view is not None:
+                self._debug_view.close()

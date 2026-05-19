@@ -1,5 +1,7 @@
 from typing import Protocol, runtime_checkable
 
+import numpy as np
+
 
 @runtime_checkable
 class Module(Protocol):
@@ -17,4 +19,12 @@ class Module(Protocol):
 
     def on_stop(self) -> None:
         """Сброс при паузе/выходе — отпустить клавиши, обнулить состояние."""
+        ...
+
+    def debug_panel(self) -> tuple[np.ndarray, bool] | None:
+        """Кадр для окна отладки + флаг «объект задетектен».
+
+        Возвращает (изображение BGR, detected) или None, если показывать
+        пока нечего (модуль ещё не делал tick).
+        """
         ...
