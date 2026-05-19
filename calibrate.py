@@ -44,10 +44,10 @@ def _process(img_bgr: np.ndarray) -> None:
     if det.has_zone and det.has_slider:
         err = det.slider_x - det.zone_center
         print(f"err:    {err:+d} px (>0 → нажать A, <0 → нажать D)")
-    _save("debug_input.png", img_bgr)
-    _save("debug_zone.png", _mask(img_bgr, CONFIG.zone_hsv))
-    _save("debug_slider.png", _mask(img_bgr, CONFIG.slider_hsv))
-    _save("debug_overlay.png", annotate(img_bgr, det))
+    _save("images/debug_input.png", img_bgr)
+    _save("images/debug_zone.png", _mask(img_bgr, CONFIG.zone_hsv))
+    _save("images/debug_slider.png", _mask(img_bgr, CONFIG.slider_hsv))
+    _save("images/debug_overlay.png", annotate(img_bgr, det))
 
 
 def _countdown(seconds: float) -> None:
