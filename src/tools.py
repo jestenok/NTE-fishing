@@ -29,7 +29,7 @@ from core.hsv import mask_one
 from core.io_utils import ensure_utf8_stdout
 from mechanics.slider import BarDetector, SliderConfig, annotate
 from profiles.base import GameProfile, load_profile
-from settings import ACTIVE_PROFILE
+from profiles.cigame import PROFILE
 
 ensure_utf8_stdout()
 
@@ -86,7 +86,7 @@ class ToolsApp:
         opts = ttk.Frame(self.root, padding=(10, 0, 10, 0))
         opts.pack(side=tk.TOP, fill=tk.X)
         ttk.Label(opts, text="profile:").pack(side=tk.LEFT)
-        self.profile_var = tk.StringVar(value=ACTIVE_PROFILE)
+        self.profile_var = tk.StringVar(value=PROFILE)
         self.profile_cb = ttk.Combobox(
             opts, textvariable=self.profile_var,
             values=_list_profiles(), width=22, state="readonly",
