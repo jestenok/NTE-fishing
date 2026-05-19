@@ -11,7 +11,7 @@ from core.io_utils import ensure_utf8_stdout
 from core.runner import GameBot
 from profiles.base import discover_profiles, load_profile
 
-QUICK_START_NTE_FISHING = False
+QUICK_START_NTE_FISHING = True
 
 ensure_utf8_stdout()
 
