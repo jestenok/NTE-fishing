@@ -7,6 +7,7 @@
 from core.geometry import Region
 from core.humanizer import HumanizerConfig
 from core.hsv import HSVRange
+from core.actions import KeyPress
 from core.watcher import WatcherConfig
 from mechanics.slider import SliderConfig
 from profiles.base import GameProfile
@@ -38,7 +39,7 @@ _reward = WatcherConfig(
     region=Region(x1=0.40, y1=0.10, x2=0.66, y2=0.16),
     hsv=[HSVRange(0, 0, 0, 180, 100, 70)],
     min_pixels=2000,
-    key="esc",
+    action=KeyPress("esc"),
     delay_s=(0.3, 1.5),
     cooldown_s=None,
 )
@@ -50,7 +51,7 @@ _banner = WatcherConfig(
     region=Region(x1=0.28, y1=0.21, x2=0.72, y2=0.30),
     hsv=[HSVRange(0, 0, 0, 180, 80, 70)],
     min_pixels=2000,
-    key="f",
+    action=KeyPress("f"),
     delay_s=(0.3, 1.5),
     cooldown_s=(3.0, 6.0),
     debug=True,
@@ -66,7 +67,7 @@ _interact = WatcherConfig(
         HSVRange(0, 0, 140, 180, 80, 255),     # белый крючок
     ],
     min_pixels=25,
-    key="f",
+    action=KeyPress("f"),
     delay_s=(0.3, 1.5),
     cooldown_s=(1.5, 3.0),
     debug=True,
