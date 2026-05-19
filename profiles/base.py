@@ -24,6 +24,7 @@ class GameProfile:
     fps: int = 60
     hotkey_toggle: str = "f8"
     hotkey_quit: str = "f9"
+    debug_view: bool = False  # отдельное окно отладки (не оверлей); по умолчанию выкл
 
     def build_modules(self) -> list[Module]:
         return [m.build() for m in self.modules]

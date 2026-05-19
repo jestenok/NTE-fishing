@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import cv2
+import numpy as np
 
 from core.actions import Action
 from core.capture import ScreenCapture
@@ -67,6 +68,8 @@ class RegionWatcher:
         self.state = self.IDLE
         self._act_at = 0.0
         self._last_debug = 0.0
+        self._last_frame: np.ndarray | None = None
+        self._last_visible = False
 
     def _resolve_threshold(self, cfg: WatcherConfig) -> int:
         if cfg.min_fill is not None:
@@ -76,12 +79,14 @@ class RegionWatcher:
 
     def _visible(self, now: float) -> bool:
         frame = self._cap.grab()
+        self._last_frame = frame
         mask = mask_any(frame, self.cfg.hsv)
         n = int(cv2.countNonZero(mask))
         if self.cfg.debug and now - self._last_debug >= 1.0:
             self._last_debug = now
             print(f"[{self.name}] pixels={n} thr={self._threshold} st={self.state}")
-        return n >= self._threshold
+        self._last_visible = n >= self._threshold
+        return self._last_visible
 
     def tick(self, now: float) -> str | None:
         visible = self._visible(now)
@@ -107,6 +112,11 @@ class RegionWatcher:
             self.state = self.COOLDOWN
             return self.cfg.action.label()
         return None
+
+    def debug_panel(self) -> tuple[np.ndarray, bool] | None:
+        if self._last_frame is None:
+            return None
+        return self._last_frame, self._last_visible
 
     def on_stop(self) -> None:
         self.state = self.IDLE

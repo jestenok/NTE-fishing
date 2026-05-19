@@ -54,5 +54,14 @@
 - RegionWatcher переведён на _delay и _cooldown; убраны _instant,
   _cooldown_until и ветка `if cooldown_s is None` из горячего цикла.
 
+## Дополнение: окно отладки (2026-05-19)
+- core/debug_view.py: DebugView — отдельное окно OpenCV с панелями по
+  модулям, зелёная/красная рамка = задетектил/нет. НЕ оверлей поверх игры
+  (выбрано пользователем из соображений античита).
+- Module получил debug_panel() -> (кадр, detected) | None. SliderMechanic
+  и RegionWatcher стэшат последний кадр/детекцию.
+- GameProfile.debug_view: bool = False — флаг полного отключения; при False
+  DebugView не создаётся вообще.
+
 ## Обнаруженные навыки
 - нет
