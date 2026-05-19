@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass
 
 import cv2
@@ -7,6 +6,7 @@ from core.actions import Action
 from core.capture import ScreenCapture
 from core.geometry import Region
 from core.hsv import HSVRange, mask_any
+from core.timing import make_cooldown, make_delay
 
 
 @dataclass
@@ -62,9 +62,10 @@ class RegionWatcher:
         self.name = cfg.name
         self._cap = ScreenCapture(cfg.region)
         self._threshold = self._resolve_threshold(cfg)
+        self._delay = make_delay(cfg.delay_s)
+        self._cooldown = make_cooldown(cfg.cooldown_s)
         self.state = self.IDLE
         self._act_at = 0.0
-        self._cooldown_until = 0.0
         self._last_debug = 0.0
 
     def _resolve_threshold(self, cfg: WatcherConfig) -> int:
@@ -86,16 +87,13 @@ class RegionWatcher:
         visible = self._visible(now)
 
         if self.state == self.COOLDOWN:
-            if self.cfg.cooldown_s is None:
-                if not visible:
-                    self.state = self.IDLE
-            elif now >= self._cooldown_until:
+            if self._cooldown.expired(now, visible):
                 self.state = self.IDLE
             return None
 
         if self.state == self.IDLE:
             if visible:
-                self._act_at = now + random.uniform(*self.cfg.delay_s)
+                self._act_at = now + self._delay.next()
                 self.state = self.SCHEDULED
             return None
 
@@ -105,8 +103,7 @@ class RegionWatcher:
             return None
         if now >= self._act_at:
             self.cfg.action.perform()
-            if self.cfg.cooldown_s is not None:
-                self._cooldown_until = now + random.uniform(*self.cfg.cooldown_s)
+            self._cooldown.start(now)
             self.state = self.COOLDOWN
             return self.cfg.action.label()
         return None

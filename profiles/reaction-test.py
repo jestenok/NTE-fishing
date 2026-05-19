@@ -29,7 +29,7 @@ _reaction = WatcherConfig(
 PROFILE = GameProfile(
     name="reaction-test",
     fps=60,
-    hotkey_toggle="f8",
-    hotkey_quit="f9",
+    hotkey_toggle="f3",
+    hotkey_quit="f4",
     modules=[_reaction],
 )

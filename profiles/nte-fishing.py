@@ -74,7 +74,7 @@ _interact = WatcherConfig(
 )
 
 PROFILE = GameProfile(
-    name="default",
+    name="nte-fishing",
     fps=60,
     hotkey_toggle="f8",
     hotkey_quit="f9",
