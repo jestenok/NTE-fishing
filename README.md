@@ -22,17 +22,27 @@ pip install -r requirements.txt
 
 ## Запуск
 
-Активный профиль выбирается импортом в `src/bot.py`:
-
-```python
-from profiles.nte_fishing import PROFILE
-```
-
-Замени имя модуля на нужный профиль (`nte_fishing`, `reaction_test`, `cigame`, …) и запусти:
+Профиль передаётся первым аргументом (имя файла в `src/profiles/` без `.py`):
 
 ```powershell
 cd src
-python bot.py
+python bot.py nte_fishing
+```
+
+Без аргументов бот печатает нумерованный список профилей и ждёт выбор:
+
+```
+Доступные профили:
+  1. cigame
+  2. nte_fishing
+  3. reaction_test
+Выбери [1-3]:
+```
+
+Принимает номер или имя. После сборки exe — так же:
+
+```powershell
+build\vision-bot.exe nte_fishing
 ```
 
 Хоткеи задаются профилем. По умолчанию: **F8** — старт/пауза, **F9** — выход (у некоторых профилей переопределено на F3/F4 — смотри `PROFILE.hotkey_toggle` / `hotkey_quit`).
@@ -45,7 +55,7 @@ python bot.py
    - **Pick color** — F7 над целевым цветом несколько раз → накопительный `HSVRange(...)`.
    - **Calibrate slider** — снимок экрана + детекция полосы для проверки параметров `SliderConfig`.
 3. В новом профиле собери `PROFILE = GameProfile(name=..., modules=[...], ...)`.
-4. Поменяй импорт в `src/bot.py` на свой профиль.
+4. Запусти `python bot.py <имя>` — модуль подцепится сразу, править `bot.py` не нужно.
 
 ## Сборка .exe (Nuitka)
 
@@ -65,6 +75,7 @@ ccache -M 10G   # увеличить лимит кэша до 10 ГБ (по ум
 cd src
 python -m nuitka --onefile --lto=no --remove-output --assume-yes-for-downloads `
   --include-package=core --include-package=mechanics --include-package=profiles `
+  --enable-plugin=tk-inter `
   --output-filename=vision-bot.exe --output-dir=..\build bot.py
 ```
 

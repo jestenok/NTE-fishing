@@ -1,4 +1,5 @@
 import importlib
+import pkgutil
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
@@ -54,3 +55,15 @@ def load_profile(name: str) -> GameProfile:
             f"profiles/{name}.py должен определять PROFILE = GameProfile(...)"
         )
     return profile
+
+
+def discover_profiles() -> list[str]:
+    """Имена профилей-модулей в пакете profiles (без base), отсортированные.
+
+    pkgutil вместо glob — чтобы работало и в Nuitka onefile.
+    """
+    import profiles as pkg
+    return sorted(
+        m.name for m in pkgutil.iter_modules(pkg.__path__)
+        if m.name != "base" and not m.name.startswith("_")
+    )
