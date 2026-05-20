@@ -2,6 +2,8 @@ from typing import Final
 
 import pydirectinput
 
+from core.event_log import EVENT_LOG
+
 pydirectinput.PAUSE = 0
 pydirectinput.FAILSAFE = False
 
@@ -26,6 +28,7 @@ class KeyHolder:
         if not self._left_down:
             pydirectinput.keyDown(self.key_left)
             self._left_down = True
+            EVENT_LOG.push(f"hold {self.key_left.upper()}")
 
     def press_right(self) -> None:
         if self._left_down:
@@ -34,14 +37,18 @@ class KeyHolder:
         if not self._right_down:
             pydirectinput.keyDown(self.key_right)
             self._right_down = True
+            EVENT_LOG.push(f"hold {self.key_right.upper()}")
 
     def release_all(self) -> None:
+        was_down = self._left_down or self._right_down
         if self._left_down:
             pydirectinput.keyUp(self.key_left)
             self._left_down = False
         if self._right_down:
             pydirectinput.keyUp(self.key_right)
             self._right_down = False
+        if was_down:
+            EVENT_LOG.push("release")
 
     @property
     def state(self) -> str:

@@ -16,7 +16,7 @@ from profiles.base import DebugView, GameProfile
 
 _reaction = WatcherConfig(
     name="reaction",
-    region=Region(x1=0.283, y1=0.348, x2=0.290, y2=0.370),
+    region=Region(x1=0.285, y1=0.365, x2=0.290, y2=0.370),
     hsv=[HSVRange(35, 60, 60, 90, 255, 255)],  # ярко-зелёный; подгони при необходимости
     action=MouseClick("left"),  # клик по центру региона
     min_fill=0.5,             # ≥50% площади региона зелёное → "позеленел"

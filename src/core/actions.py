@@ -6,6 +6,8 @@ from typing import Protocol
 
 import pydirectinput
 
+from core.event_log import EVENT_LOG
+
 pydirectinput.PAUSE = 0
 pydirectinput.FAILSAFE = False
 
@@ -30,6 +32,7 @@ class KeyPress:
         pydirectinput.keyDown(self.key)
         time.sleep(random.uniform(*self.hold_ms) / 1000.0)
         pydirectinput.keyUp(self.key)
+        EVENT_LOG.push(self.key.upper())
 
     def label(self) -> str:
         return f"{self.key.upper()} нажата"
@@ -42,6 +45,7 @@ class MouseClick:
 
     def perform(self) -> None:
         pydirectinput.click(button=self.button)
+        EVENT_LOG.push(f"M{self.button[0].upper()}")
 
     def label(self) -> str:
         return f"клик ({self.button})"

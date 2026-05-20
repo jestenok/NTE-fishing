@@ -10,7 +10,7 @@ from core.hsv import HSVRange
 from core.actions import KeyPress
 from core.watcher import WatcherConfig
 from mechanics.slider import SliderConfig
-from profiles.base import GameProfile
+from profiles.base import GameProfile, DebugView
 
 # --- Основная мини-игра: полоса с циан-зоной и жёлтым ползунком --------------
 _slider = SliderConfig(
@@ -78,5 +78,6 @@ PROFILE = GameProfile(
     fps=60,
     hotkey_toggle="f8",
     hotkey_quit="f9",
+    debug_view=DebugView.OVERLAY,
     modules=[_slider, _reward, _banner, _interact],
 )
