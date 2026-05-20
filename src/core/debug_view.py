@@ -13,12 +13,15 @@ import cv2
 import numpy as np
 
 from core.capture import ScreenCapture
+from core.event_log import EVENT_LOG
 from core.geometry import Region
 
 _OK_COLOR = (0, 220, 0)    # BGR, зелёный — объект задетектен
 _MISS_COLOR = (0, 0, 220)  # BGR, красный — не задетектен
+_LOG_COLOR = (220, 220, 220)  # BGR, светло-серый — строки лога событий
 _MAX_W = 1280              # окно не шире этого — большой экран ужимаем
 _FPS = 15                  # частота обновления окна (бот крутится быстрее)
+_LOG_LINE_H = 22           # шаг строк лога по вертикали
 
 
 class DebugView:
@@ -59,6 +62,12 @@ class DebugView:
         color = _OK_COLOR if running else _MISS_COLOR
         cv2.putText(frame, text, (12, 36),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2)
+        y = 36 + _LOG_LINE_H + 4
+        for ts, line in EVENT_LOG.recent():
+            stamp = time.strftime("%H:%M:%S", time.localtime(ts))
+            cv2.putText(frame, f"{stamp}  {line}", (12, y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, _LOG_COLOR, 1)
+            y += _LOG_LINE_H
 
     @staticmethod
     def _draw_block(frame: np.ndarray, name: str, bbox: dict, ok: bool) -> None:
