@@ -9,7 +9,7 @@ from typing import Protocol
 @dataclass
 class HumanizerConfig:
     """Параметры «очеловечивания» нажатий. Тюнятся под конкретную игру."""
-    enabled: bool = False
+    enabled: bool = True
 
     # === ФИЧЕФЛАГИ — включай по одному ===
     use_rt_jitter: bool = True            # log-normal шум на reaction delay

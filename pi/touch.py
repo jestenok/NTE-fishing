@@ -14,13 +14,9 @@ _REG_CONFIG_VER = 0x8047
 class GT911:
     def __init__(self, i2c=None, addr=0x5D, rst_pin=10, int_pin=11,
                  width=480, height=320,
-                 swap_xy=True, invert_x=False, invert_y=False):
+                 swap_xy=True, invert_x=False, invert_y=True):
         self._addr = addr
-        self._swap = swap_xy
-        self._invx = invert_x
-        self._invy = invert_y
-        self._w = width
-        self._h = height
+        self._map = self._build_mapper(swap_xy, invert_x, invert_y, width, height)
 
         self._rst = Pin(rst_pin, Pin.OUT, value=0)
         self._int = Pin(int_pin, Pin.OUT, value=0)
@@ -63,13 +59,10 @@ class GT911:
         ry = buf[2] | (buf[3] << 8)
         return self._map(rx, ry) + (n,)
 
-    def _map(self, rx, ry):
-        if self._swap:
-            x, y = ry, rx
-        else:
-            x, y = rx, ry
-        if self._invx:
-            x = self._w - 1 - x
-        if self._invy:
-            y = self._h - 1 - y
-        return (x, y)
+    @staticmethod
+    def _build_mapper(swap, invx, invy, w, h):
+        fx = (lambda v: w - 1 - v) if invx else (lambda v: v)
+        fy = (lambda v: h - 1 - v) if invy else (lambda v: v)
+        if swap:
+            return lambda rx, ry: (fx(ry), fy(rx))
+        return lambda rx, ry: (fx(rx), fy(ry))

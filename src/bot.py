@@ -8,6 +8,7 @@
 import argparse
 
 from core.io_utils import ensure_utf8_stdout
+from core.pico_link import PicoLink
 from core.runner import GameBot
 from profiles.base import discover_profiles, load_profile
 
@@ -41,10 +42,15 @@ def main() -> None:
     )
     args = parser.parse_args()
     if QUICK_START:
-        name = "cigame"
+        name = "nte_fishing"
     else:
         name = args.profile or pick_profile_interactively()
-    GameBot(load_profile(name)).run()
+    try:
+        pico = PicoLink()
+    except RuntimeError as e:
+        print(f"[bot] Pico-link off: {e}")
+        pico = None
+    GameBot(load_profile(name), pico_link=pico).run()
 
 
 if __name__ == "__main__":

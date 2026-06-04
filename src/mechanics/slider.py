@@ -50,7 +50,7 @@ class SliderConfig:
     key_right: str = "d"
     invert_keys: bool = False  # переключить, если бот тянет в обратную сторону
 
-    deadband_px: int = 4          # внутри ±этого — отпустить клавиши
+    deadband_px: int = 2          # внутри ±этого — отпустить клавиши
     engage_threshold_px: int = 9  # снова нажимать только если ушло за ±этого (гистерезис)
 
     slider_search_margin_px: int = 8

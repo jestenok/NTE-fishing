@@ -3,6 +3,11 @@ class Command:
         raise NotImplementedError
 
 
+class NoopCommand(Command):
+    def execute(self, args):
+        pass
+
+
 class MoveCommand(Command):
     def __init__(self, pointer):
         self._pointer = pointer
@@ -66,3 +71,13 @@ class ReleaseAllKeysCommand(Command):
 
     def execute(self, args):
         self._typist.release_all()
+
+
+class CallbackCommand(Command):
+    """Тонкий адаптер: дёргает callback(args) — для STATUS и подобных."""
+
+    def __init__(self, callback):
+        self._cb = callback
+
+    def execute(self, args):
+        self._cb(args)
