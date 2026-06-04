@@ -14,7 +14,7 @@ from profiles.base import DebugView, GameProfile
 
 _reaction = WatcherConfig(
     name="reaction",
-    region=Region(x1=0.450, y1=0.675, x2=0.500, y2=0.685),
+    region=Region(x1=0.450, y1=0.667, x2=0.500, y2=0.672),
     hsv=[HSVRange(0, 0, 60, 90, 255, 255)],  # белый: любой H, низкая S, высокая V
     action=KeyPress("space", (0.05, 0.1)),  # клик по центру региона
     min_fill=0.5,             # ≥50% площади региона белое → срабатываем
@@ -26,8 +26,8 @@ _reaction = WatcherConfig(
 PROFILE = GameProfile(
     name="cigame",
     fps=180,
-    hotkey_toggle="f3",
-    hotkey_quit="f4",
+    hotkey_toggle="f8",
+    hotkey_quit="f9",
     modules=[_reaction],
-    debug_view=DebugView.OFF,
+    debug_view=DebugView.OVERLAY,
 )

@@ -33,7 +33,7 @@ from profiles.cigame import PROFILE
 
 ensure_utf8_stdout()
 
-_PATCH = 11  # сторона квадрата-пробы для пипетки, пикселей
+_PATCH = 30  # сторона квадрата-пробы для пипетки, пикселей
 
 
 def _cursor_pos() -> tuple[int, int]:

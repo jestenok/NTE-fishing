@@ -9,46 +9,47 @@ from typing import Protocol
 @dataclass
 class HumanizerConfig:
     """Параметры «очеловечивания» нажатий. Тюнятся под конкретную игру."""
-    enabled: bool = True
+    enabled: bool = False
 
     # === ФИЧЕФЛАГИ — включай по одному ===
     use_rt_jitter: bool = True            # log-normal шум на reaction delay
     use_anticipation: bool = True         # предсказание по скорости ползунка
-    use_prediction_noise: bool = True     # шум предсказания
+    use_prediction_noise: bool = False    # шум предсказания — выкл: давал ложные смены знака err
     use_warmup: bool = True               # медленная реакция в начале сессии
     use_fatigue: bool = True              # RT растёт со временем
     use_reversal_penalty: bool = True     # +ms при смене направления
     use_rhythm_bonus: bool = True         # −ms при продолжении того же
     use_press_duration_scaling: bool = True   # ← ВКЛ: длительность нажатия ~ ошибке
     use_emergency_break: bool = True      # ← ВКЛ: сброс lock если маркер ушёл в обратную сторону
-    use_miss: bool = True                 # случайные промахи
+    use_miss: bool = False                # выкл: специально жал в обратную сторону, теперь не хочется
     use_pause: bool = True                # ← ВКЛ: иногда "стоит на месте" вместо нажатия
 
     # === значения параметров (используются только если соответствующий флаг True) ===
     reaction_median_ms: float = 16.0      # базовая задержка минимальна — игра слишком быстрая
     reaction_sigma: float = 0.28
-    reversal_penalty_ms: float = 45.0
+    reversal_penalty_ms: float = 120.0    # было 45 — теперь дорого менять направление, меньше колебаний
     rhythm_bonus_ms: float = 25.0
     warmup_extra_ms: float = 80.0
     warmup_seconds: float = 2.0
     fatigue_ms_per_min: float = 1.2
     fatigue_cap_ms: float = 60.0
 
-    anticipation_ms: float = 40.0
-    prediction_noise_px: float = 2.0
+    anticipation_ms: float = 18.0         # было 40 — слишком агрессивный лид флипал знак err у центра
+    prediction_noise_px: float = 1.0      # используется только если use_prediction_noise=True
     velocity_window_s: float = 0.10
 
-    press_base_ms: float = 10.0
-    press_per_px_ms: float = 1.1
+    press_base_ms: float = 6.0            # короткий базовый тап для мелких корректировок
+    press_per_px_ms: float = 1.6          # высокая зависимость от err: большие ошибки → длинное удержание
     press_sigma: float = 0.22
-    press_min_ms: float = 30.0
-    press_max_ms: float = 110.0
+    press_min_ms: float = 15.0            # минимальный тап у границы engage_threshold
+    press_max_ms: float = 220.0           # потолок поднят: при больших err бот реально тянет маркер
 
-    release_hold_median_ms: float = 70.0
+    release_hold_median_ms: float = 80.0    # компромисс: не дёргается у центра, но успевает реагировать
+    release_hold_max_ms: float = 400.0      # потолок для релиз-холда
 
     emergency_break_px: int = 6
 
-    miss_chance: float = 0.018
+    miss_chance: float = 0.1
     miss_recovery_ms: float = 150.0
     miss_median_ms: float = 25.0
     miss_min_ms: float = 12.0
@@ -57,9 +58,10 @@ class HumanizerConfig:
     miss_correction_min_ms: float = 40.0
     miss_correction_max_ms: float = 100.0
 
-    pause_chance: float = 0.64            # ~раз в 12 решений
-    pause_median_ms: float = 60.0         # короткая, чтобы маркер не успел улететь
-    pause_only_within_err_px: int = 8     # пауза только если ползунок близко к центру
+    pause_chance: float = 0.1            # чаще решаем «стоять» в центре
+    pause_median_ms: float = 220.0        # подняли с 60 — длиннее «залипание» в центре
+    pause_max_ms: float = 400.0           # потолок паузы (было хардкод 150)
+    pause_only_within_err_px: int = 10    # чуть шире «центр», чтобы пауза включалась легче
 
     rt_min_ms: float = 70.0
     rt_max_ms: float = 259.0
@@ -396,7 +398,7 @@ class CommitStage:
 
         if self.cfg.use_pause and abs(err) <= self.cfg.pause_only_within_err_px \
                 and roll < self.cfg.pause_chance:
-            duration = _lognormal_ms(self.cfg.pause_median_ms, 0.3, 20.0, 150.0)
+            duration = _lognormal_ms(self.cfg.pause_median_ms, 0.3, 20.0, self.cfg.pause_max_ms)
             return RELEASE, duration
 
         if self.cfg.use_press_duration_scaling:
@@ -409,7 +411,8 @@ class CommitStage:
 
     def _commit_release(self):
         if self.cfg.use_rt_jitter:
-            duration = _lognormal_ms(self.cfg.release_hold_median_ms, 0.25, 30.0, 220.0)
+            duration = _lognormal_ms(self.cfg.release_hold_median_ms, 0.25, 30.0,
+                                     self.cfg.release_hold_max_ms)
         else:
             duration = self.cfg.release_hold_median_ms / 1000.0
         return RELEASE, duration

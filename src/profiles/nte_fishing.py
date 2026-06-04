@@ -15,15 +15,15 @@ from profiles.base import GameProfile, DebugView
 # --- Основная мини-игра: полоса с циан-зоной и жёлтым ползунком --------------
 _slider = SliderConfig(
     name="fishing",
-    region=Region(x1=0.305, y1=0.030, x2=0.700, y2=0.080),
-    zone_hsv=HSVRange(60, 80, 140, 100, 255, 255),    # циан-зона (цель)
-    slider_hsv=HSVRange(18, 120, 180, 38, 255, 255),  # жёлтый ползунок
+    region=Region(x1=0.305, y1=0.060, x2=0.700, y2=0.080),
+    zone_hsv=HSVRange(80, 190, 180, 90, 210, 220),    # циан-зона (цель)
+    slider_hsv=HSVRange(20, 60, 190, 90, 210, 255),  # жёлтый ползунок
     key_left="a",
     key_right="d",
     invert_keys=False,        # переключить, если бот тянет в обратную сторону
-    deadband_px=4,
-    engage_threshold_px=9,
-    slider_search_margin_px=8,
+    deadband_px=8,           # внутри ±12 px — клавиши отпущены, бот «стоит»
+    engage_threshold_px=16,   # снова жмём только если ушло за ±22 px (широкий гистерезис)
+    slider_search_margin_px=200,
     min_zone_width_px=8,
     min_slider_area_px=2,
     humanizer=HumanizerConfig(),
@@ -36,9 +36,9 @@ _slider = SliderConfig(
 # cooldown_s=None: пока плашка видна — повторно не жмём.
 _reward = WatcherConfig(
     name="reward",
-    region=Region(x1=0.40, y1=0.10, x2=0.66, y2=0.16),
-    hsv=[HSVRange(0, 0, 0, 180, 100, 70)],
-    min_pixels=2000,
+    region=Region(x1=0.42, y1=0.1, x2=0.443, y2=0.126),
+    hsv=[HSVRange(0, 0, 180, 179, 30, 230)],
+    min_fill=0.50,
     action=KeyPress("esc"),
     delay_s=(0.3, 1.5),
     cooldown_s=None,
@@ -46,38 +46,38 @@ _reward = WatcherConfig(
 
 # --- Баннер «Рыба на крючке!» вверху по центру → F ---------------------------
 # Тёмная горизонтальная плашка с белым текстом в узкой Y-полосе сверху.
-_banner = WatcherConfig(
-    name="banner",
-    region=Region(x1=0.28, y1=0.21, x2=0.72, y2=0.30),
-    hsv=[HSVRange(0, 0, 0, 180, 80, 70)],
-    min_pixels=2000,
-    action=KeyPress("f"),
-    delay_s=(0.3, 1.5),
-    cooldown_s=(3.0, 6.0),
-    debug=True,
-)
+# _banner = WatcherConfig(
+#     name="banner",
+#     region=Region(x1=0.28, y1=0.21, x2=0.72, y2=0.30),
+#     hsv=[HSVRange(0, 0, 0, 180, 80, 70)],
+#     min_pixels=2000,
+#     action=KeyPress("f"),
+#     delay_s=(0.3, 1.5),
+#     cooldown_s=(3.0, 6.0),
+#     debug=True,
+# )
 
 # --- Иконка-промпт «нажми F» в правом нижнем углу → F ------------------------
 # OR двух масок: яркий cyan кант активной рыбалки + светлый белый крючок idle.
 _interact = WatcherConfig(
     name="interact",
-    region=Region(x1=0.90, y1=0.83, x2=1.00, y2=0.99),
+    region=Region(x1=0.90, y1=0.85, x2=0.95, y2=0.97),
     hsv=[
         HSVRange(85, 80, 100, 130, 255, 255),  # cyan кант
         HSVRange(0, 0, 140, 180, 80, 255),     # белый крючок
     ],
     min_pixels=25,
     action=KeyPress("f"),
-    delay_s=(0.3, 1.5),
-    cooldown_s=(1.5, 3.0),
+    delay_s=(0.2, 1.5),
+    cooldown_s=(1.5, 4.0),
     debug=True,
 )
 
 PROFILE = GameProfile(
     name="nte-fishing",
-    fps=60,
-    hotkey_toggle="f8",
-    hotkey_quit="f9",
-    debug_view=DebugView.OVERLAY,
-    modules=[_slider, _reward, _banner, _interact],
+    fps=6,
+    hotkey_toggle="f3",
+    hotkey_quit="f4",
+    debug_view=DebugView.OFF,
+    modules=[_slider, _reward, _interact],
 )

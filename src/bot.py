@@ -11,7 +11,7 @@ from core.io_utils import ensure_utf8_stdout
 from core.runner import GameBot
 from profiles.base import discover_profiles, load_profile
 
-QUICK_START_NTE_FISHING = True
+QUICK_START = True
 
 ensure_utf8_stdout()
 
@@ -40,8 +40,8 @@ def main() -> None:
         help="имя модуля в src/profiles/ без .py; если не задано — покажет меню",
     )
     args = parser.parse_args()
-    if QUICK_START_NTE_FISHING:
-        name = "nte_fishing"
+    if QUICK_START:
+        name = "cigame"
     else:
         name = args.profile or pick_profile_interactively()
     GameBot(load_profile(name)).run()
