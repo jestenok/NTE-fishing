@@ -29,7 +29,7 @@ from core.hsv import mask_one
 from core.io_utils import ensure_utf8_stdout
 from mechanics.slider import BarDetector, SliderConfig, annotate
 from profiles.base import GameProfile, load_profile
-from profiles.cigame import PROFILE
+from profiles.nte_fishing import PROFILE
 
 ensure_utf8_stdout()
 

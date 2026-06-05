@@ -82,6 +82,7 @@ class BarDetector:
         self._hsv: np.ndarray | None = None
         self._zone_mask: np.ndarray | None = None
         self._slider_mask: np.ndarray | None = None
+        self._zone_or_slider: np.ndarray | None = None
 
     def detect(self, img_bgr: np.ndarray) -> Detection:
         self._hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV, dst=self._hsv)
@@ -195,6 +196,10 @@ class SliderMechanic:
         )
         self._apply(action)
         return self._log(now, det, action)
+
+    def observe(self, now: float) -> None:
+        frame = self._cap.grab()
+        self._last_det = self._detector.detect(frame)
 
     def _apply(self, action: str) -> None:
         if action == LEFT:

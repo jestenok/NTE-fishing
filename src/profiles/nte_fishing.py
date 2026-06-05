@@ -16,13 +16,13 @@ from profiles.base import GameProfile, DebugView
 _slider = SliderConfig(
     name="fishing",
     region=Region(x1=0.305, y1=0.060, x2=0.700, y2=0.080),
-    zone_hsv=HSVRange(80, 190, 180, 90, 210, 220),    # циан-зона (цель)
-    slider_hsv=HSVRange(20, 60, 190, 90, 210, 255),  # жёлтый ползунок
+    zone_hsv=HSVRange(84, 200, 200, 113, 239, 229),    # циан-зона (цель)
+    slider_hsv=HSVRange(20, 95, 240, 30, 115, 255),  # жёлтый ползунок
     key_left="a",
     key_right="d",
     invert_keys=False,        # переключить, если бот тянет в обратную сторону
-    deadband_px=4,           # внутри ±5 px — клавиши отпущены, бот «стоит»
-    engage_threshold_px=5,   # снова жмём только если ушло за ±5 px (широкий гистерезис)
+    deadband_px=80,           # внутри ±5 px — клавиши отпущены, бот «стоит»
+    engage_threshold_px=100,   # снова жмём только если ушло за ±5 px (широкий гистерезис)
     slider_search_margin_px=200,
     min_zone_width_px=8,
     min_slider_area_px=2,
@@ -46,16 +46,16 @@ _reward = WatcherConfig(
 
 # --- Баннер «Рыба на крючке!» вверху по центру → F ---------------------------
 # Тёмная горизонтальная плашка с белым текстом в узкой Y-полосе сверху.
-# _banner = WatcherConfig(
-#     name="banner",
-#     region=Region(x1=0.28, y1=0.21, x2=0.72, y2=0.30),
-#     hsv=[HSVRange(0, 0, 0, 180, 80, 70)],
-#     min_pixels=2000,
-#     action=KeyPress("f"),
-#     delay_s=(0.3, 1.5),
-#     cooldown_s=(3.0, 6.0),
-#     debug=True,
-# )
+_banner = WatcherConfig(
+    name="banner",
+    region=Region(x1=0.44, y1=0.24, x2=0.502, y2=0.255),
+    hsv=[HSVRange(0, 0, 180, 179, 30, 230)],
+    min_fill=0.2,
+    action=KeyPress("f"),
+    delay_s=(0.3, 1.5),
+    cooldown_s=(7, 9),
+    debug=True,
+)
 
 # --- Иконка-промпт «нажми F» в правом нижнем углу → F ------------------------
 # OR двух масок: яркий cyan кант активной рыбалки + светлый белый крючок idle.
@@ -69,15 +69,15 @@ _interact = WatcherConfig(
     min_pixels=25,
     action=KeyPress("f"),
     delay_s=(0.2, 1.5),
-    cooldown_s=(1.5, 4.0),
+    cooldown_s=(10, 12),
     debug=True,
 )
 
 PROFILE = GameProfile(
-    name="nte-fishing",
+    name="nte_fishing",
     fps=6,
     hotkey_toggle="f3",
     hotkey_quit="f4",
     debug_view=DebugView.OVERLAY,
-    modules=[_slider, _reward, _interact],
+    modules=[_slider, _reward, _banner, _interact],
 )

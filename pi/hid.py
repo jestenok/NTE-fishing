@@ -1,8 +1,23 @@
+import binascii
+import machine
 import time
 import usb.device
 from usb.device.hid import HIDInterface
 from usb.device.mouse import MouseInterface
 from usb.device.keyboard import KeyboardInterface
+
+
+def _build_serial():
+    """8 hex upper из 4 байт unique_id. Под формат дешёвых HID-мышей —
+    каждая плата уникальна, но не выдаёт 16-hex chip_id RP2350."""
+    raw = machine.unique_id()
+    # XOR старшей и младшей половины — чтобы по serial нельзя было
+    # восстановить полный chip_id обратной выборкой.
+    half = len(raw) // 2 or 1
+    folded = bytes(a ^ b for a, b in zip(raw[:half], raw[half:half * 2]))
+    if not folded:
+        folded = raw[:4]
+    return binascii.hexlify(folded[:4]).decode().upper()
 
 
 class HidDevice:
@@ -204,9 +219,12 @@ class HidStack:
         self._devices = list(devices)
 
     def attach(self, timeout_s=5):
+        # serial_str — производный от unique_id хэш, не сам chip_id.
+        # MP-дефолт hex(machine.unique_id()) палит RP2350 16-hex форматом.
         usb.device.get().init(
             *[d.iface for d in self._devices],
             builtin_driver=True,
+            serial_str=_build_serial(),
         )
         deadline = time.ticks_add(time.ticks_ms(), int(timeout_s * 1000))
         while time.ticks_diff(deadline, time.ticks_ms()) > 0:

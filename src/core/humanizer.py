@@ -227,6 +227,19 @@ class LockGuardStage:
         else:
             state.in_miss_press = False
 
+        # Маркер в мёртвой зоне — ничего не делаем и ждём, пока зона уйдёт сама.
+        # Если ещё жмём — отпускаем сразу, минуя reaction-задержку, иначе за
+        # эти миллисекунды проскочим центр и спровоцируем разворот.
+        if ctx.slider_x is not None and ctx.zone_center is not None \
+                and abs(ctx.slider_x - ctx.zone_center) <= ctx.deadband_px:
+            if state.current != RELEASE:
+                state.current = RELEASE
+                state.lock_until = 0.0
+            state.pending = None
+            state.post_miss_release_until = 0.0
+            ctx.finish(RELEASE)
+            return
+
         if ctx.now < state.post_miss_release_until:
             state.current = RELEASE
             ctx.finish(RELEASE)
@@ -281,6 +294,13 @@ class ClassifyStage:
 
     def apply(self, ctx, state):
         if ctx.slider_x is None or ctx.zone_center is None:
+            ctx.desired = RELEASE
+            return
+        # Реальное (без антиципации) положение в мёртвой зоне — стоим и ждём,
+        # пока зона сама уйдёт. Никаких команд, даже если velocity-предсказание
+        # выкидывает predicted_err за engage_threshold.
+        raw_err = ctx.slider_x - ctx.zone_center
+        if abs(raw_err) <= ctx.deadband_px:
             ctx.desired = RELEASE
             return
         e = ctx.predicted_err
@@ -423,6 +443,7 @@ class Humanizer:
         self.cfg = cfg
         self.state = HumanizerState()
         self._ctx = DecisionContext()
+        self._raw_last: str = RELEASE
         self.stages: list[Stage] = [
             PerceptionStage(cfg),
             LockGuardStage(cfg),
@@ -434,6 +455,7 @@ class Humanizer:
 
     def reset(self) -> None:
         self.state.reset()
+        self._raw_last = RELEASE
 
     def step(self, slider_x: float | None, zone_center: float | None,
              deadband_px: int, engage_threshold_px: int | None = None) -> str:
@@ -449,13 +471,23 @@ class Humanizer:
                 return ctx.result
         return ctx.result
 
-    @staticmethod
-    def _raw(slider_x, zone_center, deadband_px, _engage_threshold_px):
+    def _raw(self, slider_x, zone_center, deadband_px, engage_threshold_px):
+        # Внутри deadband — всегда RELEASE и ждём, пока зона уйдёт сама.
+        # Снаружи нажимаем, только если ошибка превысила engage_threshold_px
+        # (широкий порог); удерживаем нажатие, пока |err| > deadband_px (узкий).
+        # Гистерезис исключает дёрганья на границе.
         if slider_x is None or zone_center is None:
+            self._raw_last = RELEASE
             return RELEASE
         err = slider_x - zone_center
-        if err > deadband_px:
-            return LEFT
-        if err < -deadband_px:
-            return RIGHT
-        return RELEASE
+        if abs(err) <= deadband_px:
+            self._raw_last = RELEASE
+            return RELEASE
+        threshold = engage_threshold_px if self._raw_last == RELEASE else deadband_px
+        if err > threshold:
+            self._raw_last = LEFT
+        elif err < -threshold:
+            self._raw_last = RIGHT
+        else:
+            self._raw_last = RELEASE
+        return self._raw_last

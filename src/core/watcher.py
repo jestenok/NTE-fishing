@@ -111,6 +111,9 @@ class RegionWatcher:
             return self.cfg.action.label()
         return None
 
+    def observe(self, now: float) -> None:
+        self._visible(now)
+
     def debug_block(self) -> tuple[dict, bool]:
         return self._cap.bbox, self._last_visible
 

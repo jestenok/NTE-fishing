@@ -167,9 +167,12 @@ class GameBot:
                         msg = m.tick(t0)
                         if msg:
                             print(f"[{m.name}] {msg}")
+                elif self._debug_view is not None:
+                    for m in self.modules:
+                        m.observe(t0)
                 if self._debug_view is not None:
                     self._render_debug()
-                if not self.running:
+                if not self.running and self._debug_view is None:
                     time.sleep(0.05)
                 self.rate.sleep_to_frame(t0)
         finally:
