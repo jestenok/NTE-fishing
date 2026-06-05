@@ -86,14 +86,16 @@ class ToolsApp:
         opts = ttk.Frame(self.root, padding=(10, 0, 10, 0))
         opts.pack(side=tk.TOP, fill=tk.X)
         ttk.Label(opts, text="profile:").pack(side=tk.LEFT)
-        self.profile_var = tk.StringVar(value=PROFILE)
+        profiles = _list_profiles()
+        default = PROFILE.name if PROFILE.name in profiles else (profiles[0] if profiles else "")
+        self.profile_var = tk.StringVar(value=default)
         self.profile_cb = ttk.Combobox(
             opts, textvariable=self.profile_var,
-            values=_list_profiles(), width=22, state="readonly",
+            values=profiles, width=22, state="readonly",
         )
         self.profile_cb.pack(side=tk.LEFT, padx=6)
         ttk.Label(opts, text="delay (s):").pack(side=tk.LEFT, padx=(12, 0))
-        self.delay_var = tk.StringVar(value="5")
+        self.delay_var = tk.StringVar(value="1")
         self.delay_sb = ttk.Spinbox(
             opts, from_=0, to=60, increment=1, width=4, textvariable=self.delay_var,
         )
